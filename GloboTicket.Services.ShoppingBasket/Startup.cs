@@ -32,6 +32,8 @@ namespace GloboTicket.Services.ShoppingBasket
         public void ConfigureServices(IServiceCollection services)
         {
 
+            services.AddHttpContextAccessor();
+
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
             services.AddScoped<IBasketRepository, BasketRepository>();
@@ -64,7 +66,7 @@ namespace GloboTicket.Services.ShoppingBasket
                     .AddJwtBearer(options =>
                     {
                         options.Authority = "https://localhost:5010";
-                        options.Audience = "globoticket";
+                        options.Audience = "shoppingbasket";
                     });
 
             var requiredAuthenticatedUserPolicy = new AuthorizationPolicyBuilder().

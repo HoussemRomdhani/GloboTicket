@@ -58,14 +58,14 @@ namespace GloboTicket.Web
 
                  options.Authority = "https://localhost:5010";
 
-                 options.ClientId = "globoticketinteractive";
+                 options.ClientId = "globoticket";
                  options.ClientSecret = "ce766e16-df99-411d-8d31-0f5bbc6b8eba";
                  options.ResponseType = "code";
 
                  options.SaveTokens = true;
                  options.GetClaimsFromUserInfoEndpoint = true;
 
-                 options.Scope.Add("globoticket.fullaccess");
+                 options.Scope.Add("shoppingbasket.fullaccess");
              });
         }
 
