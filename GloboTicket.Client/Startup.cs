@@ -64,6 +64,8 @@ namespace GloboTicket.Web
 
                  options.SaveTokens = true;
                  options.GetClaimsFromUserInfoEndpoint = true;
+
+                 options.Scope.Add("globoticket.fullaccess");
              });
         }
 
