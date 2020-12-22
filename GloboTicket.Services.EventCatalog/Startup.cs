@@ -9,9 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using System;
-using System.Net.Http;
-using Polly;
-using Polly.Extensions.Http;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
@@ -55,12 +52,6 @@ namespace GloboTicket.Services.EventCatalog
             services.AddControllers(options =>
             {
                 options.Filters.Add(new AuthorizeFilter(requiredAuthenticatedUserPolicy));
-            });
-
-
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy("CanRead", policy => policy.RequireClaim("scope", "eventcatalog.read"));
             });
         }
 

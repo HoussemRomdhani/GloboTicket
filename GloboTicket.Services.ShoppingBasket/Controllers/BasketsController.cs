@@ -12,6 +12,8 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Polly.CircuitBreaker;
+using GloboTicket.Services.ShoppingBasket.Helpers;
+using Microsoft.AspNetCore.Authentication;
 
 namespace GloboTicket.Services.ShoppingBasket.Controllers
 {
@@ -23,16 +25,19 @@ namespace GloboTicket.Services.ShoppingBasket.Controllers
         private readonly IMapper mapper;
         private readonly IMessageBus messageBus;
         private readonly IDiscountService discountService;
+        private readonly TokenExchangeService tokenExchangeService;
 
         public BasketsController(IBasketRepository basketRepository, 
             IMapper mapper, 
             IMessageBus messageBus, 
-            IDiscountService discountService)
+            IDiscountService discountService,
+            TokenExchangeService tokenExchangeService)
         {
             this.basketRepository = basketRepository;
             this.mapper = mapper;
             this.messageBus = messageBus;
             this.discountService = discountService;
+            this.tokenExchangeService = tokenExchangeService;
         }
 
         [HttpGet("{basketId}", Name = "GetBasket")]
@@ -102,8 +107,7 @@ namespace GloboTicket.Services.ShoppingBasket.Controllers
                 //apply discount by talking to the discount service
                 Coupon coupon = null;
 
-                // IRL, get the user id from this.User object
-                var userId = basketCheckout.UserId;
+                var userId = Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "sub")?.Value);
 
                 if (!(userId == Guid.Empty))
                     coupon = await discountService.GetCoupon(userId);
@@ -116,6 +120,12 @@ namespace GloboTicket.Services.ShoppingBasket.Controllers
                 {
                     basketCheckoutMessage.BasketTotal = total;
                 }
+
+                var incomingToken = await HttpContext.GetTokenAsync("access_token");
+
+                var accessTokenForOrderingService = await tokenExchangeService.GetTokenAsync(incomingToken, "ordering.fullaccess");
+
+                basketCheckoutMessage.SecurityContext.AccessToken = accessTokenForOrderingService;
 
                 try
                 {

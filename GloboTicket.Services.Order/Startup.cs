@@ -2,6 +2,7 @@ using AutoMapper;
 using GloboTicket.Integration.MessagingBus;
 using GloboTicket.Services.Ordering.DbContexts;
 using GloboTicket.Services.Ordering.Extensions;
+using GloboTicket.Services.Ordering.Helpers;
 using GloboTicket.Services.Ordering.Messaging;
 using GloboTicket.Services.Ordering.Repositories;
 using Microsoft.AspNetCore.Builder;
@@ -27,6 +28,10 @@ namespace GloboTicket.Services.Ordering
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+
+            services.AddHttpClient();
+            services.AddScoped<TokenValidationService>();
+
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
             services.AddDbContext<OrderDbContext>(options =>

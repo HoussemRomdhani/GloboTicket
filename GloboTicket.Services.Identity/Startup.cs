@@ -49,6 +49,7 @@ namespace GloboTicket.Services.Identity
             // not recommended for production - you need to store your key material somewhere secure
             builder.AddDeveloperSigningCredential();
 
+            // add extension grant
             builder.AddExtensionGrantValidator<TokenExchangeExtensionGrantValidator>();
 
         }

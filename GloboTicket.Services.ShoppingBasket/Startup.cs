@@ -17,6 +17,8 @@ using Polly.Extensions.Http;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Authorization;
+using System.IdentityModel.Tokens.Jwt;
+using GloboTicket.Services.ShoppingBasket.Helpers;
 
 namespace GloboTicket.Services.ShoppingBasket
 {
@@ -31,8 +33,12 @@ namespace GloboTicket.Services.ShoppingBasket
 
         public void ConfigureServices(IServiceCollection services)
         {
+            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+
 
             services.AddHttpContextAccessor();
+            services.AddAccessTokenManagement();
+            services.AddScoped<TokenExchangeService>();
 
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 

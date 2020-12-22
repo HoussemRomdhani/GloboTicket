@@ -26,49 +26,53 @@ namespace GloboTicket.Web
 
         public void ConfigureServices(IServiceCollection services)
         {
+            var requireAuthenticatedUserPolicy = new AuthorizationPolicyBuilder()
+              .RequireAuthenticatedUser()
+              .Build();
 
-            var requiredAuthenticatedUserPolicy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
-
-            var builder = services.AddControllersWithViews(options => {
-                options.Filters.Add(new AuthorizeFilter(requiredAuthenticatedUserPolicy));
+            var builder = services.AddControllersWithViews(options =>
+            {
+                options.Filters.Add(new AuthorizeFilter(requireAuthenticatedUserPolicy));
             });
 
             if (environment.IsDevelopment())
                 builder.AddRazorRuntimeCompilation();
 
-            services.AddHttpContextAccessor();
+            services.AddAccessTokenManagement();
 
             services.AddHttpClient<IEventCatalogService, EventCatalogService>(c =>
-                c.BaseAddress = new Uri(config["ApiConfigs:EventCatalog:Uri"]));
+                c.BaseAddress = new Uri(config["ApiConfigs:EventCatalog:Uri"]))
+                .AddUserAccessTokenHandler();
             services.AddHttpClient<IShoppingBasketService, ShoppingBasketService>(c =>
-                c.BaseAddress = new Uri(config["ApiConfigs:ShoppingBasket:Uri"]));
+                c.BaseAddress = new Uri(config["ApiConfigs:ShoppingBasket:Uri"]))
+                .AddUserAccessTokenHandler();
             services.AddHttpClient<IOrderService, OrderService>(c =>
-                c.BaseAddress = new Uri(config["ApiConfigs:Order:Uri"]));
+                c.BaseAddress = new Uri(config["ApiConfigs:Order:Uri"]))
+                .AddUserAccessTokenHandler();
 
             services.AddSingleton<Settings>();
 
+            services.AddHttpContextAccessor();
+
             services.AddAuthentication(options =>
             {
-                options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
             }).AddCookie(CookieAuthenticationDefaults.AuthenticationScheme)
             .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
-             {
-                 options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            {
+                options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.Authority = "https://localhost:5010/";
+                options.ClientId = "globoticket";
+                options.ResponseType = "code";
+                options.SaveTokens = true;
+                options.ClientSecret = "ce766e16-df99-411d-8d31-0f5bbc6b8eba";
+                options.GetClaimsFromUserInfoEndpoint = true;
+                options.Scope.Add("globoticketgateway.fullaccess");
+                options.Scope.Add("offline_access");
+            });
 
-                 options.Authority = "https://localhost:5010";
-
-                 options.ClientId = "globoticket";
-                 options.ClientSecret = "ce766e16-df99-411d-8d31-0f5bbc6b8eba";
-                 options.ResponseType = "code";
-
-                 options.SaveTokens = true;
-                 options.GetClaimsFromUserInfoEndpoint = true;
-
-                 options.Scope.Add("shoppingbasket.fullaccess");
-             });
         }
-
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
@@ -82,6 +86,7 @@ namespace GloboTicket.Web
                 app.UseHsts();
             }
             app.UseHttpsRedirection();
+
             app.UseStaticFiles();
 
             app.UseRouting();
